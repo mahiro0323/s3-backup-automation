@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+*.secret
+
+# AWS credentials
+.aws/
+credentials
+
+# Backup data
+backup/
+backups/
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Editor settings
+.vscode/
+.idea/
+
+# Shell history
+.zsh_history
+.bash_history
