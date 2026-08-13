@@ -1,5 +1,10 @@
 # S3 Backup Automation 構成図
 
+## AWS構成図
+
+![S3 Backup Automation Architecture](./s3automationarchitecture.png)
+
+
 ## システム構成
 
 ```mermaid
