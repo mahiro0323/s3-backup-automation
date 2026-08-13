@@ -36,8 +36,8 @@ flowchart TB
     LAUNCHD --> SCRIPT
     ENV --> SCRIPT
     SCRIPT --> AWSCLI
-　　AWSCLI --> OBJECTS
-　　IAM -.-> OBJECTS
+    AWSCLI --> OBJECTS
+    IAM -.-> OBJECTS
 
     OBJECTS --> VERSIONING
     OBJECTS --> LIFECYCLE
@@ -55,7 +55,7 @@ flowchart TB
 1. `launchd` が毎日22:00にバックアップ処理を開始
 2. `s3-backup.sh` が `.env` から環境設定を取得
 3. AWS CLIの `aws s3 sync` を実行
-4. IAMの最小権限ポリシーを使用してAmazon S3へアクセス
+4. IAMの最小権限ポリシーによる認可のもと、Amazon S3へアクセス
 5. ローカルデータをAmazon S3へバックアップ
 6. S3 Versioningによって過去バージョンを保持
 7. Lifecycle Policyによって保存期間に応じてストレージクラスを移行
@@ -74,12 +74,11 @@ flowchart LR
     S3["Amazon S3<br/>バックアップデータ保持"]
 
     LOCALDELETE --> SYNC
-    SYNC --> IAM
-    IAM --> S3
+    SYNC --> S3
+    IAM -.-> S3
 ```
-
-バックアップ処理では `aws s3 sync --delete` を使用せず、
-IAMポリシーにも `s3:DeleteObject` を付与しないことで、
+バックアップ処理では aws s3 sync --delete を使用せず、
+IAMポリシーにも s3:DeleteObject を付与しないことで、
 ローカル環境での誤削除がS3上のバックアップデータ削除へ波及しない設計としています。
 
 ---

@@ -82,15 +82,13 @@ AWS CLI
 aws s3 sync
     │
     ▼
-IAM
-Least Privilege
-    │
-    ▼
 Amazon S3
     │
     ├── Versioning
+    ├── Lifecycle Policy
     │
-    └── Lifecycle Policy
+    └── IAM Policy
+        Least Privilege
 ```
 
 処理の流れは以下の通りです。
@@ -99,7 +97,7 @@ Amazon S3
 2. `s3-backup.sh`を実行
 3. `.env`からS3バケット名・リージョン・AWS CLI Profileを取得
 4. `aws s3 sync`を実行
-5. IAMの最小権限ポリシーを利用してAmazon S3へアクセス
+5. IAMの最小権限ポリシーによる認可のもと、Amazon S3へアクセス
 6. ローカルデータをAmazon S3へバックアップ
 7. S3 Versioningによって過去バージョンを保持
 8. Lifecycle Policyによって保存期間に応じてストレージクラスを移行
