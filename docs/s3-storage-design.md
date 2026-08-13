@@ -377,6 +377,7 @@ Amazon S3
 IAM Policy
 └── Least Privilege
     └── AWS CLIからAmazon S3へのアクセスを認可
+```
 
 ---
 
