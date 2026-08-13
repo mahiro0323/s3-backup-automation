@@ -36,8 +36,8 @@ flowchart TB
     LAUNCHD --> SCRIPT
     ENV --> SCRIPT
     SCRIPT --> AWSCLI
-    AWSCLI --> IAM
-    IAM --> OBJECTS
+　　AWSCLI --> OBJECTS
+　　IAM -.-> OBJECTS
 
     OBJECTS --> VERSIONING
     OBJECTS --> LIFECYCLE
