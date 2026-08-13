@@ -97,6 +97,7 @@ AWS CLIがMultipart Uploadを利用する場合があります。
 "AbortIncompleteMultipartUpload": {
   "DaysAfterInitiation": 7
 }
+```
 
 これにより、開始から7日経過しても完了していないMultipart Uploadを
 自動的にAbortする構成としています。
@@ -105,8 +106,6 @@ AWS CLIがMultipart Uploadを利用する場合があります。
 不要なストレージ使用量の増加を抑制します。
 
 なお、この設定は完了済みのオブジェクトを削除するものではありません。
-
-
 ---
 
 ## 非現行バージョンの保持
@@ -365,10 +364,6 @@ AWS CLI
 aws s3 sync
         │
         ▼
-IAM
-Least Privilege
-        │
-        ▼
 Amazon S3
         │
         ├── S3 Versioning
@@ -376,11 +371,12 @@ Amazon S3
         └── Lifecycle Policy
                 │
                 ├── S3 Standard
-                │
                 ├── S3 Standard-IA
-                │
                 └── S3 Glacier Flexible Retrieval
-```
+
+IAM Policy
+└── Least Privilege
+    └── AWS CLIからAmazon S3へのアクセスを認可
 
 ---
 
