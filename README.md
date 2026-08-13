@@ -394,7 +394,7 @@ bash -n scripts/s3-backup.sh
 
 ## 自動実行
 
-macOSの`launchd`を利用してバックアップ処理を定期実行します。
+macOSの`launchd`を利用して、バックアップ処理を定期実行します。
 
 設定ファイル：
 
@@ -408,10 +408,136 @@ launchd/io.github.mahiro0323.s3-backup-automation.plist
 毎日 22:00
 ```
 
-環境に合わせて、plist内のスクリプトパスを調整する必要があります。
+`launchd`へ登録する前に、plistの構文を確認します。
+
+```bash
+plutil -lint launchd/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+正常な場合は、以下のように表示されます。
+
+```text
+launchd/io.github.mahiro0323.s3-backup-automation.plist: OK
+```
+
+### LaunchAgentへの配置
+
+ユーザー用LaunchAgentとして利用するため、
+plistを`~/Library/LaunchAgents`へ配置します。
+
+```bash
+mkdir -p ~/Library/LaunchAgents
+```
+
+```bash
+cp launchd/io.github.mahiro0323.s3-backup-automation.plist \
+  ~/Library/LaunchAgents/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+配置後のファイルを確認します。
+
+```bash
+ls -l ~/Library/LaunchAgents/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+コピー後のplistについても構文確認を行います。
+
+```bash
+plutil -lint ~/Library/LaunchAgents/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+### launchdへの登録
+
+以下のコマンドでLaunchAgentを登録します。
+
+```bash
+launchctl bootstrap gui/$(id -u) \
+  ~/Library/LaunchAgents/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+登録状態は以下で確認できます。
+
+```bash
+launchctl print gui/$(id -u)/io.github.mahiro0323.s3-backup-automation
+```
+
+本構成では`StartCalendarInterval`を利用し、
+毎日22:00にバックアップ処理を開始する設定としています。
+
+```text
+Hour   : 22
+Minute : 0
+```
+
+### 手動起動テスト
+
+定期実行を待たずに動作確認する場合は、
+以下のコマンドでLaunchAgentを手動起動できます。
+
+```bash
+launchctl kickstart -k \
+  gui/$(id -u)/io.github.mahiro0323.s3-backup-automation
+```
+
+実行状態は以下で確認します。
+
+```bash
+launchctl print \
+  gui/$(id -u)/io.github.mahiro0323.s3-backup-automation \
+  | grep -E "runs|last exit code|state"
+```
+
+正常終了した場合は、以下のように終了コード`0`を確認できます。
+
+```text
+runs = 1
+last exit code = 0
+```
+
+### 動作確認結果
+
+手動起動テストでは、`launchd`経由でバックアップスクリプトが正常に実行されることを確認しました。
+
+以下のバックアップ対象について処理完了を確認しています。
+
+```text
+Documents
+Desktop
+Pictures
+Downloads
+```
+
+また、AWS CLIからAmazon S3を確認し、
+各ディレクトリに対応するプレフィックスが作成されていることを確認しました。
+
+```text
+Desktop/
+Documents/
+Downloads/
+Pictures/
+```
+
+標準ログでは、バックアップ開始から各ディレクトリの処理完了、
+バックアップ終了まで正常に記録されることを確認しています。
+
+なお、毎日22:00の`StartCalendarInterval`による自動起動については、
+設定値およびLaunchAgentへの登録状態を確認しています。
+実行時刻到達後は`runs`の増加とログを確認することで定期実行を検証できます。
+
+### LaunchAgentの登録解除
+
+設定変更や検証のためにLaunchAgentを登録解除する場合は、
+以下のコマンドを使用します。
+
+```bash
+launchctl bootout gui/$(id -u) \
+  ~/Library/LaunchAgents/io.github.mahiro0323.s3-backup-automation.plist
+```
+
+環境によってリポジトリの配置場所が異なるため、
+plist内のスクリプトパスは実際の環境に合わせて調整してください。
 
 ---
-
 ## ログ
 
 `launchd`実行時のログは、標準出力とエラー出力を分離しています。
