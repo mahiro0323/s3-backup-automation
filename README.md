@@ -253,6 +253,65 @@ Lifecycle Policyでは、完了していないMultipart Uploadを
 - [docs/s3-storage-design.md](./docs/s3-storage-design.md)
 
 
+### Lifecycle Policyの適用
+
+Lifecycle Policyを実際のS3バケットへ適用する前に、
+現在の設定をバックアップします。
+
+```bash
+aws s3api get-bucket-lifecycle-configuration \
+  --bucket "$S3_BUCKET" \
+  --region "$AWS_REGION" \
+  --profile "$AWS_PROFILE" \
+  > /tmp/s3-lifecycle-before.json
+```
+
+バックアップしたJSONの構文を確認します。
+
+```bash
+python3 -m json.tool /tmp/s3-lifecycle-before.json > /dev/null \
+  && echo "OK: lifecycle backup"
+```
+
+Lifecycle Policyを適用します。
+
+```bash
+aws s3api put-bucket-lifecycle-configuration \
+  --bucket "$S3_BUCKET" \
+  --lifecycle-configuration file://s3/lifecycle-policy.json \
+  --transition-default-minimum-object-size all_storage_classes_128K \
+  --region "$AWS_REGION" \
+  --profile "$AWS_PROFILE"
+```
+
+> [!NOTE]
+> `put-bucket-lifecycle-configuration`は既存のLifecycle設定を置き換えるため、
+> 適用前に現在の設定を確認・バックアップします。
+>
+> また、Lifecycle Policyの変更は管理操作です。
+> 実運用ではバックアップ実行用の最小権限IAMとは分離し、
+> `s3:PutLifecycleConfiguration`を許可した管理用の認証情報で実施します。
+
+適用後は、AWS側からLifecycle設定を再取得して確認します。
+
+```bash
+aws s3api get-bucket-lifecycle-configuration \
+  --bucket "$S3_BUCKET" \
+  --region "$AWS_REGION" \
+  --profile "$AWS_PROFILE" \
+  --query 'Rules[0].{ID:ID,Status:Status,Transitions:Transitions,NoncurrentVersionExpiration:NoncurrentVersionExpiration,AbortIncompleteMultipartUpload:AbortIncompleteMultipartUpload}'
+```
+
+本構成では以下の設定が反映されていることを確認しています。
+
+```text
+Lifecycle Rule             : Enabled
+S3 Standard-IA             : 30日後
+S3 Glacier Flexible Retrieval : 180日後
+Noncurrent Version削除     : 90日後
+Incomplete Multipart Upload: 7日後にAbort
+128KB未満                  : デフォルトではストレージクラス移行対象外
+```
 ---
 
 ## 非現行バージョン
