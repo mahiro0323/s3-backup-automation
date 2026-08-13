@@ -83,12 +83,12 @@ aws s3 sync
     │
     ▼
 Amazon S3
-    │
     ├── Versioning
-    ├── Lifecycle Policy
-    │
-    └── IAM Policy
-        Least Privilege
+    └── Lifecycle Policy
+
+IAM Policy
+└── Least Privilege
+    └── AWS CLIからAmazon S3へのアクセスを認可
 ```
 
 処理の流れは以下の通りです。
