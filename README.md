@@ -230,6 +230,29 @@ AWSのデフォルト動作を利用します。
 詳細な設計方針は以下を参照してください。
 
 - [docs/s3-storage-design.md](./docs/s3-storage-design.md)
+
+
+### 未完了Multipart Upload
+
+Lifecycle Policyでは、完了していないMultipart Uploadを
+開始から7日後に自動的にAbortする設定としています。
+
+```json
+"AbortIncompleteMultipartUpload": {
+  "DaysAfterInitiation": 7
+}
+```
+
+これにより、ネットワーク切断や処理中断などで残った
+未完了アップロードのパーツが長期間S3上に残ることを防ぎます。
+
+完了済みのオブジェクトには影響しません。
+
+詳細な設計方針は以下を参照してください。
+
+- [docs/s3-storage-design.md](./docs/s3-storage-design.md)
+
+
 ---
 
 ## 非現行バージョン

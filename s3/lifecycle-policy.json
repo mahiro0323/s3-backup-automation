@@ -18,6 +18,9 @@
       ],
       "NoncurrentVersionExpiration": {
         "NoncurrentDays": 90
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 7
       }
     }
   ]
