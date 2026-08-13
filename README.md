@@ -127,8 +127,8 @@ s3-backup-automation/
 │
 ├── launchd/
 │   └── io.github.mahiro0323.s3-backup-automation.plist
-│
 ├── s3/
+│   ├── versioning-configuration.json
 │   └── lifecycle-policy.json
 │
 └── scripts/
@@ -145,9 +145,54 @@ S3の詳細なストレージ設計については以下にまとめています
 
 ### S3 Versioning
 
-バックアップ用S3バケットではVersioningを利用します。
+バックアップ用S3バケットではS3 Versioningを有効化します。
 
-同じオブジェクトが上書きされた場合でも過去バージョンを保持することで、必要に応じて以前の状態へ復元できる構成としています。
+同じオブジェクトが上書きされた場合でも過去バージョンを保持することで、
+必要に応じて以前の状態へ復元できる構成としています。
+
+Versioningの設定ファイルは以下です。
+
+- [s3/versioning-configuration.json](./s3/versioning-configuration.json)
+
+設定内容：
+
+```json
+{
+  "Status": "Enabled"
+}
+```
+
+AWS CLIからS3 Versioningを有効化する場合は、以下のコマンドを使用します。
+
+```bash
+aws s3api put-bucket-versioning \
+  --bucket "$S3_BUCKET" \
+  --versioning-configuration Status=Enabled \
+  --region "$AWS_REGION" \
+  --profile "$AWS_PROFILE"
+```
+
+AWS CLIでは、`--versioning-configuration Status=Enabled` を指定することで、
+対象バケットのVersioningを有効化できます。
+
+Versioningの設定状態は、以下のコマンドで確認できます。
+
+```bash
+aws s3api get-bucket-versioning \
+  --bucket "$S3_BUCKET" \
+  --region "$AWS_REGION" \
+  --profile "$AWS_PROFILE"
+```
+
+正常に有効化されている場合は、以下のように `Status` が `Enabled` と表示されます。
+
+```json
+{
+  "Status": "Enabled"
+}
+```
+
+### Versioningのイメージ
 
 ```text
 report.pdf
@@ -156,8 +201,10 @@ report.pdf
 └── Version 3 (current)
 ```
 
----
+過去バージョンを保持することで、
+誤った上書きが発生した場合でも以前の状態へ復元できます。
 
+---
 ## Lifecycle Policy
 
 バックアップデータは保存期間に応じてストレージクラスを変更します。
